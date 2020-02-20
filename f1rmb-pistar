@@ -1,0 +1,359 @@
+#!/usr/bin/env bash
+
+if [ "$(id -u)" != "0" ]; then
+  echo -e "You need to be root to run this command...\n"
+  exit 1
+fi
+
+
+UPDATE_SELF=${UPDATE_SELF:-1}
+UPDATE_REPO_URI="https://github.com/f1rmb/f1rmb-pistar"
+UPDATE_REPO_CONTENT_URI=${UPDATE_REPO_URI/github.com/raw.githubusercontent.com}
+UPDATE_URI="${UPDATE_REPO_CONTENT_URI}/master/f1rmb-pistar"
+ROOT_PATH=${ROOT_PATH:-"/"}
+WORK_PATH=${WORK_PATH:-"${ROOT_PATH}/root"}
+SELFUPDATE_SCRIPT="${WORK_PATH}/.updateScript-f1rmb-pistar.sh"
+CURL_OPTIONS=${CURL_OPTIONS:-""}
+ALL_ARGS="$@"
+
+RELEASE_FILE="/etc/pistar-release"
+
+if [ -f ${RELEASE_FILE} ]; then
+    PISTAR_VERSION=$(grep 'Version' /etc/pistar-release | cut -f 2 -d '=' | tr -d ' ')
+    PISTAR_VERSION_INFO=( ${PISTAR_VERSION//./ })
+    if [[ ${UPDATE_SELF} -eq 0 ]]; then
+	echo "Detected Pi-Star version: $PISTAR_VERSION (major: ${PISTAR_VERSION_INFO[0]})"
+    fi
+else
+    echo "ERROR: you're not running a PiStar."
+    exit 1
+fi
+
+
+## Dashboard
+OFFICIAL_DASHBOARD_REPO="https://github.com/AndyTaylorTweet/Pi-Star_DV_Dash.git"
+PERSONNAL_DASHBOARD_REPO="https://github.com/f1rmb/Pi-Star_DV_Dash.git"
+
+# Always follow redirects
+CURL_OPTIONS="${CURL_OPTIONS} -L"
+
+## System Binaries
+OFFICIAL_SBINARIES_REPO="https://github.com/AndyTaylorTweet/Pi-Star_Binaries_sbin.git"
+PERSONNAL_SBINARIES_REPO="https://github.com/f1rmb/Pi-Star_Binaries_sbin.git"
+
+## Binaries (v3 and v4 are using different repositories
+if [ ${PISTAR_VERSION_INFO[0]} -eq 3 ]; then
+    OFFICIAL_BINARIES_REPO="https://github.com/AndyTaylorTweet/Pi-Star_Binaries.git"
+    PERSONNAL_BINARIES_REPO="https://github.com/f1rmb/Pi-Star_Binaries.git"
+    OFFICIAL_RELEASE_VERSION="3.4.17"
+elif [ ${PISTAR_VERSION_INFO[0]} -eq 4 ]; then
+    OFFICIAL_BINARIES_REPO="https://github.com/AndyTaylorTweet/Pi-Star_v4_Binaries_Bin.git"
+    PERSONNAL_BINARIES_REPO="https://github.com/f1rmb/Pi-Star_v4_Binaries_Bin.git"
+    OFFICIAL_RELEASE_VERSION="4.1.0-RC8"
+else
+    echo "Unsupported PiStar version, bailing out."
+    exit 1
+fi
+
+
+function _rw() {
+    mount -o remount,rw /
+    mount -o remount,rw /boot
+}
+
+function _ro() {
+    sync
+    mount -o remount,ro /boot
+    mount -o remount,ro /
+}
+
+
+# $1 directory
+# $2 repository
+function ChangeAndCheckoutRepo() {
+    dir="$1"
+    repo="$2"
+
+    cd "$1"
+    git remote add newrepo "$repo"
+    git fetch newrepo
+    git remote remove origin
+    git remote rename newrepo origin
+    git reset --hard origin/master
+}
+
+function InstallDashboard() {
+    _rw
+    ChangeAndCheckoutRepo "/var/www/dashboard" "$PERSONNAL_DASHBOARD_REPO"
+    _ro
+}
+
+function RestoreDashboard() {
+    _rw
+    ChangeAndCheckoutRepo "/var/www/dashboard" "$OFFICIAL_DASHBOARD_REPO"
+    _ro
+}
+
+function InstallBinaries() {
+    _rw
+    ChangeAndCheckoutRepo "/usr/local/bin" "$PERSONNAL_BINARIES_REPO"
+    _ro
+}
+
+function RestoreBinaries() {
+    _rw
+    ChangeAndCheckoutRepo "/usr/local/bin" "$OFFICIAL_BINARIES_REPO"
+    _ro
+}
+
+function InstallSBinaries() {
+    _rw
+    ChangeAndCheckoutRepo "/usr/local/sbin" "$PERSONNAL_SBINARIES_REPO"
+    _ro
+}
+
+function RestoreSBinaries() {
+    _rw
+    ChangeAndCheckoutRepo "/usr/local/sbin" "$OFFICIAL_SBINARIES_REPO"
+    _ro
+}
+
+function RestoreDataAndDowngrade() {
+    _rw
+    
+    # Remove tweaked CSS colors
+    rm -f /etc/pistar-css.ini
+
+    # Downgrade version
+    if [ ${PISTAR_VERSION_INFO[0]} -eq 3 ]; then
+	# Enable SAMBA
+	systemctl unmask smbd
+	systemctl unmask nmbd
+	LC_ALL=C systemctl enable smbd > /dev/null 2<&1
+	LC_ALL=C systemctl enable nmbd > /dev/null 2<&1
+	systemctl start smbd
+	systemctl start nmbd
+
+	# Enable agetty on tty1
+	systemctl enable getty@tty1.service
+	systemctl start getty@tty1.service
+
+	# Delete MobileGPS service
+	systemctl disable mobilegps.timer
+	rm -f /lib/systemd/system/mobilegps.timer
+	rm -f /lib/systemd/system/mobilegps.service	
+	
+	systemctl daemon-reload
+	
+	sed -i "s/$PISTAR_VERSION/$OFFICIAL_RELEASE_VERSION/g" /etc/pistar-release
+
+	/usr/local/sbin/pistar-motdgen
+
+	echo "Downgraded from ${PISTAR_VERSION} to $OFFICIAL_RELEASE_VERSION..."
+	
+    elif [ ${PISTAR_VERSION_INFO[0]} -eq 4 ]; then
+	# Enable SAMBA
+	systemctl unmask smbd
+	systemctl unmask nmbd
+	LC_ALL=C systemctl enable smbd > /dev/null 2<&1
+	LC_ALL=C systemctl enable nmbd > /dev/null 2<&1
+	systemctl start smbd
+	systemctl start nmbd
+
+	# Enable agetty on tty1
+	systemctl enable getty@tty1.service
+	systemctl start getty@tty1.service
+
+	# Delete MobileGPS service
+	systemctl disable mobilegps.timer
+	rm -f /lib/systemd/system/mobilegps.timer
+	rm -f /lib/systemd/system/mobilegps.service	
+	
+	systemctl daemon-reload
+
+	sed -i "s/$PISTAR_VERSION/$OFFICIAL_RELEASE_VERSION/g" /etc/pistar-release
+
+	/usr/local/sbin/pistar-motdgen
+
+	echo "Downgraded from ${PISTAR_VERSION} to $OFFICIAL_RELEASE_VERSION..."
+    fi
+    
+    _ro
+}
+
+function UpdateSelf() {
+    echo "Performing self-update..."
+    local _tempFileName="$0.tmp"
+    _rw
+
+    if ! eval curl -fs ${CURL_OPTIONS} --output "${_tempFileName}" "${UPDATE_URI}"; then
+        echo "ERROR: Failed to download update for f1rmb-pistar!"
+        echo "ERROR: Make sure you have ca-certificates installed and that the time is set correctly"
+	_ro
+        exit 1
+    fi
+    
+    if [[ "$(head -1 ${_tempFileName})" != '#!/usr/bin/env bash' ]]; then
+        echo "ERROR: Failed to download update for f1rmb-pistar!"
+        echo "ERROR: Contents of file is not as expected - github may be down"
+	_ro
+        exit 1
+    fi
+    
+    local OCTAL_MODE=$(stat -c '%a' "$0")
+    if ! chmod ${OCTAL_MODE} "${_tempFileName}" ; then
+        echo "ERROR: Error while trying to set mode on ${_tempFileName}"
+	_ro
+        exit 1
+    fi
+    
+    cat > "${SELFUPDATE_SCRIPT}" << EOF
+      	mount -o remount,rw /
+    	mount -o remount,rw /boot
+        if mv "${_tempFileName}" "$0"; then
+           rm -- "\$0"
+           exec env UPDATE_SELF=0 /usr/bin/env bash "$0" "$ALL_ARGS"
+        else
+           echo "ERROR: Failed!"
+        fi
+       	mount -o remount,ro /
+        mount -o remount,ro /boot
+EOF
+
+    _ro
+    echo "Relaunching after update"
+    exec /usr/bin/env bash "${SELFUPDATE_SCRIPT}" "$ALL_ARGS"
+}
+
+function DisplayConfigUpdate() {
+    echo " ****************************************** NOTICE ******************************************"
+    echo " *                                                                                           *"
+    echo " * Now you need to open the Pi-Star's Configuration page, and click \"Apply Changes\" button *"
+    echo " *                                                                                           *"
+    echo " *********************************************************************************************"
+}
+
+# $1 directory
+# $1 original repo
+function DisplayRepoStatus() {
+    dir="$1"
+    repo=$(git --work-tree=${dir} --git-dir=${dir}/.git config --get remote.origin.url)
+
+    if [ "$repo" == "$2" ]; then
+	echo "$1 uses *ORIGINAL* PiStar repository."
+    else
+	echo "$1 uses *PERSONNAL* repository."
+    fi
+}
+
+function DisplayStatus() {
+    DisplayRepoStatus "/var/www/dashboard" "$OFFICIAL_DASHBOARD_REPO"
+    DisplayRepoStatus "/usr/local/bin" "$OFFICIAL_BINARIES_REPO"
+    DisplayRepoStatus "/usr/local/sbin" "$OFFICIAL_SBINARIES_REPO"
+}
+
+function DisplayHelp() {
+    echo "`basename $0` usage:"
+    echo ""
+    echo "  -h, --help                      Display this help text."
+    echo "  -ia, --install-all              Install personnal dashboard, binariess and system binaries"
+    echo "  -ra, --restore-all              Restore original dashboard, binariess and system binaries"
+    echo "  -id, --install-dashboard        Install personnal dashboard."
+    echo "  -rd, --restore-dashboard        Restore original dashboard."
+    echo "  -ib, --install-binaries         Install personnal binaries."
+    echo "  -rb, --restore-binaries         Restore original binaries."
+    echo "  -is, --install-sbinaries        Install personnal system binaries."
+    echo "  -rs, --restore-sbinaries        Restore original system binaries."
+    echo "  -s, --status                    Display current install, original or personnal installations."
+    echo ""
+}
+
+
+if [ $# -eq 0 ]; then
+    DisplayHelp
+    exit 1
+fi
+
+
+if [[ ${UPDATE_SELF} -ne 0 ]]; then
+        UpdateSelf
+else
+        rm -f "${SELFUPDATE_SCRIPT}"
+fi
+
+
+
+## Parse command line
+while [[ $# -gt 0 ]]; do
+    key="$1"
+
+    case $key in
+	"-ia" | "--install-all")
+	    InstallDashboard
+	    InstallBinaries
+	    InstallSBinaries
+	    DisplayConfigUpdate
+	    shift
+	    ;;
+
+	"-ra" | "--restore-all")
+	    RestoreDashboard
+	    RestoreBinaries
+	    RestoreSBinaries
+	    RestoreDataAndDowngrade
+	    DisplayConfigUpdate
+	    shift
+	    ;;
+
+	"-id" | "--install-dashboard")
+	    InstallDashboard
+	    DisplayConfigUpdate
+	    shift
+	    ;;
+
+	"-rd" | "--restore-dashboard")
+	    RestoreDashboard
+	    RestoreDataAndDowngrade
+	    DisplayConfigUpdate
+	    shift
+	    ;;
+
+	"-ib" | "--install-binaries")
+	    InstallBinaries
+	    shift
+	    ;;
+
+	"-rb" | "--restore-binaries")
+	    RestoreBinaries
+	    shift
+	    ;;
+
+	"-is" | "--install-sbinaries")
+	    InstallSBinaries
+	    shift
+	    ;;
+
+	"-rs" | "--restore-sbinaries")
+	    RestoreSBinaries
+	    shift
+	    ;;
+
+	"-s" | "--status")
+	    DisplayStatus
+	    shift
+	    ;;
+
+	"-h" | "--help")
+	    DisplayHelp
+	    shift
+	    ;;
+
+	*)
+	    DisplayHelp;
+	    exit 1
+	    ;;
+    esac
+done
+
+exit 0
+
