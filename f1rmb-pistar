@@ -57,6 +57,8 @@ fi
 
 
 function _rw() {
+    # Prevent the FS to be remounted as RO
+    systemctl stop cron.service > /dev/null 2<&1
     mount -o remount,rw /
     mount -o remount,rw /boot
 }
@@ -65,8 +67,8 @@ function _ro() {
     sync
     mount -o remount,ro /boot
     mount -o remount,ro /
+    systemctl start cron.service > /dev/null 2<&1
 }
-
 
 # $1 directory
 # $2 repository
@@ -222,7 +224,7 @@ EOF
 
     _ro
     echo "Relaunching after update"
-    exec /usr/bin/env bash "${SELFUPDATE_SCRIPT}" "$ALL_ARGS"
+    exec /usr/bin/env bash "${SELFUPDATE_SCRIPT}"
 }
 
 function DisplayConfigUpdate() {
