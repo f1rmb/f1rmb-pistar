@@ -49,7 +49,7 @@ if [ ${PISTAR_VERSION_INFO[0]} -eq 3 ]; then
 elif [ ${PISTAR_VERSION_INFO[0]} -eq 4 ]; then
     OFFICIAL_BINARIES_REPO="https://github.com/AndyTaylorTweet/Pi-Star_v4_Binaries_Bin.git"
     PERSONNAL_BINARIES_REPO="https://github.com/f1rmb/Pi-Star_v4_Binaries_Bin.git"
-    OFFICIAL_RELEASE_VERSION="4.1.0-RC8"
+    OFFICIAL_RELEASE_VERSION="4.1.0"
 else
     echo "Unsupported PiStar version, bailing out."
     exit 1
