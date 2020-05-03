@@ -49,7 +49,7 @@ if [ ${PISTAR_VERSION_INFO[0]} -eq 3 ]; then
 elif [ ${PISTAR_VERSION_INFO[0]} -eq 4 ]; then
     OFFICIAL_BINARIES_REPO="https://github.com/AndyTaylorTweet/Pi-Star_v4_Binaries_Bin.git"
     PERSONNAL_BINARIES_REPO="https://github.com/f1rmb/Pi-Star_v4_Binaries_Bin.git"
-    OFFICIAL_RELEASE_VERSION="4.1.0"
+    OFFICIAL_RELEASE_VERSION="4.1.1"
 else
     echo "Unsupported PiStar version, bailing out."
     exit 1
@@ -128,6 +128,11 @@ function RestoreDataAndDowngrade() {
 
     # Downgrade version
     if [ ${PISTAR_VERSION_INFO[0]} -eq 3 ]; then
+        # Enable unattended-upgrades
+        systemctl unmask unattended-upgrades
+        LC_ALL=C systemctl enable unattended-upgrades > /dev/null 2<&1
+        systemctl start unattended-upgrades
+
 	# Enable SAMBA
 	systemctl unmask smbd
 	systemctl unmask nmbd
@@ -154,6 +159,11 @@ function RestoreDataAndDowngrade() {
 	echo "Downgraded from ${PISTAR_VERSION} to $OFFICIAL_RELEASE_VERSION..."
 	
     elif [ ${PISTAR_VERSION_INFO[0]} -eq 4 ]; then
+        # Enable unattended-upgrades
+        systemctl unmask unattended-upgrades
+        LC_ALL=C systemctl enable unattended-upgrades > /dev/null 2<&1
+        systemctl start unattended-upgrades
+	
 	# Enable SAMBA
 	systemctl unmask smbd
 	systemctl unmask nmbd
