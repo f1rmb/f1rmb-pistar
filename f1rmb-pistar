@@ -128,11 +128,6 @@ function RestoreDataAndDowngrade() {
 
     # Downgrade version
     if [ ${PISTAR_VERSION_INFO[0]} -eq 3 ]; then
-        # Enable unattended-upgrades
-        systemctl unmask unattended-upgrades
-        LC_ALL=C systemctl enable unattended-upgrades > /dev/null 2<&1
-        systemctl start unattended-upgrades
-
 	# Enable SAMBA
 	systemctl unmask smbd
 	systemctl unmask nmbd
