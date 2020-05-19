@@ -155,7 +155,28 @@ function RestoreDataAndDowngrade() {
 	echo "Downgraded from ${PISTAR_VERSION} to $OFFICIAL_RELEASE_VERSION..."
 	
     elif [ ${PISTAR_VERSION_INFO[0]} -eq 4 ]; then
-        # Enable unattended-upgrades
+	# Revert MobileGPS
+	## RMB: Clean MobileGPS once release is published
+	#systemctl disable mobilegps.timer
+	#rm -f /lib/systemd/system/mobilegps.timer
+	#echo '[Unit]' > /lib/systemd/system/mobilegps.service
+	#echo 'Description=Pi-Star MobileGPS Service' >> /lib/systemd/system/mobilegps.service
+	#echo 'After=syslog.target network.target' >> /lib/systemd/system/mobilegps.service
+	#echo '' >> /lib/systemd/system/mobilegps.service
+	#echo '[Service]' >> /lib/systemd/system/mobilegps.service
+	#echo 'Type=forking' >> /lib/systemd/system/mobilegps.service
+	#echo 'ExecStart=/usr/local/sbin/mobilegps.service start' >> /lib/systemd/system/mobilegps.service
+	#echo 'ExecStop=/usr/local/sbin/mobilegps.service stop' >> /lib/systemd/system/mobilegps.service
+	#echo 'ExecReload=/usr/local/sbin/mobilegps.service restart' >> /lib/systemd/system/mobilegps.service
+	#echo '' >> /lib/systemd/system/mobilegps.service
+	#echo '[Install]' >> /lib/systemd/system/mobilegps.service
+	#echo 'WantedBy=multi-user.target' >> /lib/systemd/system/mobilegps.service
+	
+	# Enable the service
+	#systemctl daemon-reload
+	#systemctl enable mobilegps.service
+	
+	# Enable unattended-upgrades
         systemctl unmask unattended-upgrades
         LC_ALL=C systemctl enable unattended-upgrades > /dev/null 2<&1
         systemctl start unattended-upgrades
