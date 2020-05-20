@@ -49,8 +49,7 @@ if [ ${PISTAR_VERSION_INFO[0]} -eq 3 ]; then
 elif [ ${PISTAR_VERSION_INFO[0]} -eq 4 ]; then
     OFFICIAL_BINARIES_REPO="https://github.com/AndyTaylorTweet/Pi-Star_v4_Binaries_Bin.git"
     PERSONNAL_BINARIES_REPO="https://github.com/f1rmb/Pi-Star_v4_Binaries_Bin.git"
-    OFFICIAL_RELEASE_VERSION="4.1.1"
-    #OFFICIAL_RELEASE_VERSION="4.1.2"
+    OFFICIAL_RELEASE_VERSION="4.1.2"
 else
     echo "Unsupported PiStar version, bailing out."
     exit 1
@@ -156,25 +155,25 @@ function RestoreDataAndDowngrade() {
 	
     elif [ ${PISTAR_VERSION_INFO[0]} -eq 4 ]; then
 	# Revert MobileGPS
-	## RMB: Clean MobileGPS once release is published
-	#systemctl disable mobilegps.timer
-	#rm -f /lib/systemd/system/mobilegps.timer
-	#echo '[Unit]' > /lib/systemd/system/mobilegps.service
-	#echo 'Description=Pi-Star MobileGPS Service' >> /lib/systemd/system/mobilegps.service
-	#echo 'After=syslog.target network.target' >> /lib/systemd/system/mobilegps.service
-	#echo '' >> /lib/systemd/system/mobilegps.service
-	#echo '[Service]' >> /lib/systemd/system/mobilegps.service
-	#echo 'Type=forking' >> /lib/systemd/system/mobilegps.service
-	#echo 'ExecStart=/usr/local/sbin/mobilegps.service start' >> /lib/systemd/system/mobilegps.service
-	#echo 'ExecStop=/usr/local/sbin/mobilegps.service stop' >> /lib/systemd/system/mobilegps.service
-	#echo 'ExecReload=/usr/local/sbin/mobilegps.service restart' >> /lib/systemd/system/mobilegps.service
-	#echo '' >> /lib/systemd/system/mobilegps.service
-	#echo '[Install]' >> /lib/systemd/system/mobilegps.service
-	#echo 'WantedBy=multi-user.target' >> /lib/systemd/system/mobilegps.service
+	systemctl disable mobilegps.timer
+	rm -f /lib/systemd/system/mobilegps.timer
+	
+	echo '[Unit]' > /lib/systemd/system/mobilegps.service
+	echo 'Description=Pi-Star MobileGPS Service' >> /lib/systemd/system/mobilegps.service
+	echo 'After=syslog.target network.target' >> /lib/systemd/system/mobilegps.service
+	echo '' >> /lib/systemd/system/mobilegps.service
+	echo '[Service]' >> /lib/systemd/system/mobilegps.service
+	echo 'Type=forking' >> /lib/systemd/system/mobilegps.service
+	echo 'ExecStart=/usr/local/sbin/mobilegps.service start' >> /lib/systemd/system/mobilegps.service
+	echo 'ExecStop=/usr/local/sbin/mobilegps.service stop' >> /lib/systemd/system/mobilegps.service
+	echo 'ExecReload=/usr/local/sbin/mobilegps.service restart' >> /lib/systemd/system/mobilegps.service
+	echo '' >> /lib/systemd/system/mobilegps.service
+	echo '[Install]' >> /lib/systemd/system/mobilegps.service
+	echo 'WantedBy=multi-user.target' >> /lib/systemd/system/mobilegps.service
 	
 	# Enable the service
-	#systemctl daemon-reload
-	#systemctl enable mobilegps.service
+	systemctl daemon-reload
+	systemctl enable mobilegps.service
 	
 	# Enable unattended-upgrades
         systemctl unmask unattended-upgrades
