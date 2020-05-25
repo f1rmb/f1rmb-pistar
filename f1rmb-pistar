@@ -50,6 +50,7 @@ elif [ ${PISTAR_VERSION_INFO[0]} -eq 4 ]; then
     OFFICIAL_BINARIES_REPO="https://github.com/AndyTaylorTweet/Pi-Star_v4_Binaries_Bin.git"
     PERSONNAL_BINARIES_REPO="https://github.com/f1rmb/Pi-Star_v4_Binaries_Bin.git"
     OFFICIAL_RELEASE_VERSION="4.1.2"
+    #OFFICIAL_RELEASE_VERSION="4.1.3"
 else
     echo "Unsupported PiStar version, bailing out."
     exit 1
@@ -154,6 +155,11 @@ function RestoreDataAndDowngrade() {
 	echo "Downgraded from ${PISTAR_VERSION} to $OFFICIAL_RELEASE_VERSION..."
 	
     elif [ ${PISTAR_VERSION_INFO[0]} -eq 4 ]; then
+	# Revert shellinabox localhost-only
+	#rm -f /etc/nginx/default.d/shellinabox.conf
+	#grep -q 'SHELLINABOX_ARGS' /etc/default/shellinabox && (grep -q '^SHELLINABOX_ARGS=.*\-\-localhost\-only' /etc/default/shellinabox && (sed -i 's/\-\-localhost\-only\ //g' /etc/default/shellinabox))
+	#systemctl reload nginx.service
+	
 	# Revert MobileGPS
 	systemctl disable mobilegps.timer
 	rm -f /lib/systemd/system/mobilegps.timer
