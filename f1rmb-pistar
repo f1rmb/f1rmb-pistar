@@ -182,10 +182,6 @@ function RestoreDataAndDowngrade() {
 	echo '[Install]' >> /lib/systemd/system/mobilegps.service
 	echo 'WantedBy=multi-user.target' >> /lib/systemd/system/mobilegps.service
 	
-	# Enable the service
-	systemctl daemon-reload
-	systemctl enable mobilegps.service
-	
 	# Enable unattended-upgrades
         systemctl unmask unattended-upgrades
         LC_ALL=C systemctl enable unattended-upgrades > /dev/null 2<&1
@@ -202,14 +198,11 @@ function RestoreDataAndDowngrade() {
 	# Enable agetty on tty1
 	systemctl enable getty@tty1.service
 	systemctl start getty@tty1.service
-
-	# Delete MobileGPS service
-	systemctl disable mobilegps.timer
-	rm -f /lib/systemd/system/mobilegps.timer
-	rm -f /lib/systemd/system/mobilegps.service	
 	
+	# Enable the service
 	systemctl daemon-reload
-
+	systemctl enable mobilegps.service
+	
 	sed -i "s/$PISTAR_VERSION/$OFFICIAL_RELEASE_VERSION/g" /etc/pistar-release
 
 	/usr/local/sbin/pistar-motdgen
