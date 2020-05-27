@@ -132,6 +132,7 @@ function RestoreDataAndDowngrade() {
 	# Revert shellinabox localhost-only
 	#rm -f /etc/nginx/default.d/shellinabox.conf
 	#grep -q 'SHELLINABOX_ARGS' /etc/default/shellinabox && (grep -q '^SHELLINABOX_ARGS=.*\-\-localhost\-only' /etc/default/shellinabox && (sed -i 's/\-\-localhost\-only\ //g' /etc/default/shellinabox))
+	#grep -q 'font-family' /etc/shellinabox/options-available/00_White\ On\ Black.css && (sed -i '/#vt100 #console, #vt100 #alt_console, #vt100 #cursor, #vt100 #lineheight {/,/}/d' /etc/shellinabox/options-available/00_White\ On\ Black.css)
 	#systemctl reload nginx.service
 	
 	# Enable SAMBA
@@ -163,6 +164,7 @@ function RestoreDataAndDowngrade() {
 	# Revert shellinabox localhost-only
 	#rm -f /etc/nginx/default.d/shellinabox.conf
 	#grep -q 'SHELLINABOX_ARGS' /etc/default/shellinabox && (grep -q '^SHELLINABOX_ARGS=.*\-\-localhost\-only' /etc/default/shellinabox && (sed -i 's/\-\-localhost\-only\ //g' /etc/default/shellinabox))
+	#grep -q 'font-family' /etc/shellinabox/options-available/00_White\ On\ Black.css && (sed -i '/#vt100 #console, #vt100 #alt_console, #vt100 #cursor, #vt100 #lineheight {/,/}/d' /etc/shellinabox/options-available/00_White\ On\ Black.css)
 	#systemctl reload nginx.service
 	
 	# Revert MobileGPS
