@@ -442,7 +442,6 @@ while [[ $# -gt 0 ]]; do
 	"-rb" | "--restore-binaries")
 	    RestoreBinaries
 	    RestoreSanityCheck
-	    RestoreSanityCheck
 	    shift
 	    ;;
 
@@ -454,7 +453,6 @@ while [[ $# -gt 0 ]]; do
 
 	"-rs" | "--restore-sbinaries")
 	    RestoreSBinaries
-	    RestoreSanityCheck
 	    RestoreSanityCheck
 	    shift
 	    ;;
