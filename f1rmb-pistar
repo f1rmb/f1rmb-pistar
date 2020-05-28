@@ -101,7 +101,7 @@ function ApplyFix_PI4fstab() {
 		    $(grep -q '^tmpfs.*/run.*tmpfs.*size\=64m.*' /etc/fstab)
 		    retval=$?
 		    if [ $retval -eq 0 ]; then
-			sed -i 's/^tmpfs\t\t\t\/run\t\t\ttmpfs.*size\=64m.*/tmpfs\t\t\t\/run\t\t\ttmpfs\tnodev,noatime,nosuid,mode\=1777,size\=32m\t\t0\t0/g' /etc/fstab
+			sed -i 's/^tmpfs[ \t]\+\/run[ \t]\+tmpfs.*size\=64m.*/tmpfs\t\t\t\/run\t\t\ttmpfs\tnodev,noatime,nosuid,mode\=1777,size\=32m\t\t0\t0/g' /etc/fstab
 			echo " ****************************************** NOTICE ******************************************"
 			echo " *                                                                                          *"
 			echo " *               A critical modification has been applied to your Raspberry.                *"
@@ -113,7 +113,7 @@ function ApplyFix_PI4fstab() {
 		    $(grep -q '^tmpfs.*/run.*tmpfs.*size\=32m.*' /etc/fstab)
 		    retval=$?
 		    if [ $retval -eq 0 ]; then
-			sed -i 's/^tmpfs\t\t\t\/run\t\t\ttmpfs.*size\=32m.*/tmpfs\t\t\t\/run\t\t\ttmpfs\tnodev,noatime,nosuid,mode\=1777,size\=64m\t\t0\t0/g' /etc/fstab
+			sed -i 's/^tmpfs[ \t]\+\/run[ \t]\+tmpfs.*size\=32m.*/tmpfs\t\t\t\/run\t\t\ttmpfs\tnodev,noatime,nosuid,mode\=1777,size\=64m\t\t0\t0/g' /etc/fstab
 			echo " ****************************************** NOTICE ******************************************"
 			echo " *                                                                                          *"
 			echo " *    A critical modification has been applied to your Raspberry, it will reboot shorlty.   *"
