@@ -98,7 +98,7 @@ function ApplyFix_PI4fstab() {
 	else
 	    if [ "$fixNeeded" == "YES" ]; then
 		if [ "$1" == "REMOVE" ]; then
-		    $(grep -q '^tmpfs.*/run.*tmpfs.*size\=64m.*' /etc/fstab)
+		    $(grep -q '^tmpfs.*/run[[:blank:]]\+tmpfs[[:blank:]].*size\=64m.*' /etc/fstab)
 		    retval=$?
 		    if [ $retval -eq 0 ]; then
 			sed -i 's/^tmpfs[ \t]\+\/run[ \t]\+tmpfs.*size\=64m.*/tmpfs\t\t\t\/run\t\t\ttmpfs\tnodev,noatime,nosuid,mode\=1777,size\=32m\t\t0\t0/g' /etc/fstab
@@ -110,7 +110,7 @@ function ApplyFix_PI4fstab() {
 			echo " ********************************************************************************************"
 		    fi
 		elif [ "$1" == "APPLY" ]; then
-		    $(grep -q '^tmpfs.*/run.*tmpfs.*size\=32m.*' /etc/fstab)
+		    $(grep -q '^tmpfs.*/run[[:blank:]]\+tmpfs[[:blank:]].*size\=32m.*' /etc/fstab)
 		    retval=$?
 		    if [ $retval -eq 0 ]; then
 			sed -i 's/^tmpfs[ \t]\+\/run[ \t]\+tmpfs.*size\=32m.*/tmpfs\t\t\t\/run\t\t\ttmpfs\tnodev,noatime,nosuid,mode\=1777,size\=64m\t\t0\t0/g' /etc/fstab
