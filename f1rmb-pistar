@@ -124,7 +124,7 @@ function ApplyFix_PI4fstab() {
 			sleep 10s
 			/sbin/shutdown -r now
 		    else
-			echo "No need to appy fstab mod"
+			echo "Raspberry Pi4: no need to appy /etc/fstab modification."
 		    fi
 		fi
 	    fi
