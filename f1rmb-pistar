@@ -71,6 +71,85 @@ function _ro() {
     systemctl start cron.service > /dev/null 2<&1
 }
 
+# Change the size of the /run RAM disk, on PI4 only
+# $1: "APPLY" or "REMOVE"
+function ApplyFix_PI4fstab() {
+    modelName=$(grep 'model name' /proc/cpuinfo | sed 's/.*: //')
+    hardwareField=$(grep 'Hardware' /proc/cpuinfo | sed 's/.*: //')
+    fixNeeded="NO"
+
+    if [[ ${modelName} == "ARM"* ]]; then
+	# Pull the Board revision from /proc/cpuinfo
+	boardRev=$(grep 'Revision' /proc/cpuinfo | awk '{print $3}' | sed 's/^100//')
+
+	# Handle Pi4 only
+	case "$boardRev" in
+	    *"a03111" | *"b03111" | *"c03111" | *"b03112" | *"c03112")
+		fixNeeded="YES"
+		;;
+	esac
+	
+	if [[ ${hardwareField} == "ODROID"* ]]; then
+	    :
+	elif [[ ${hardwareField} == *"sun8i"* ]]; then
+	    :
+	elif [[ ${hardwareField} == *"s5p4418"* ]]; then
+	    :
+	else
+	    if [ "$fixNeeded" == "YES" ]; then
+		if [ "$1" == "REMOVE" ]; then
+		    $(grep -q '^tmpfs.*/run.*tmpfs.*size\=64m.*' /etc/fstab)
+		    retval=$?
+		    if [ $retval -eq 0 ]; then
+			sed -i 's/^tmpfs\t\t\t\/run\t\t\ttmpfs.*size\=64m.*/tmpfs\t\t\t\/run\t\t\ttmpfs\tnodev,noatime,nosuid,mode\=1777,size\=32m\t\t0\t0/g' /etc/fstab
+			echo " ****************************************** NOTICE ******************************************"
+			echo " *                                                                                          *"
+			echo " *               A critical modification has been applied to your Raspberry.                *"
+			echo " *        You will need to restart your system to take in account this modification.        *"
+			echo " *                                                                                          *"
+			echo " ********************************************************************************************"
+		    fi
+		elif [ "$1" == "APPLY" ]; then
+		    $(grep -q '^tmpfs.*/run.*tmpfs.*size\=32m.*' /etc/fstab)
+		    retval=$?
+		    if [ $retval -eq 0 ]; then
+			sed -i 's/^tmpfs\t\t\t\/run\t\t\ttmpfs.*size\=32m.*/tmpfs\t\t\t\/run\t\t\ttmpfs\tnodev,noatime,nosuid,mode\=1777,size\=64m\t\t0\t0/g' /etc/fstab
+			echo " ****************************************** NOTICE ******************************************"
+			echo " *                                                                                          *"
+			echo " *    A critical modification has been applied to your Raspberry, it will reboot shorlty.   *"
+			echo " *        You will need to restart this script to continue to installation process.         *"
+			echo " *                                                                                          *"
+			echo " ********************************************************************************************"
+			_ro
+			sleep 10s
+			/sbin/shutdown -r now
+		    else
+			echo "No need to appy fstab mod"
+		    fi
+		fi
+	    fi
+	fi
+	
+    elif [[ ${hardwareField} == *"sun8i"* ]]; then
+	:
+    else
+	:
+    fi
+}
+
+function SanityCheck() {
+    _rw
+    ApplyFix_PI4fstab "APPLY"
+    _ro
+}
+
+function RestoreSanityCheck() {
+    _rw
+    ApplyFix_PI4fstab "REMOVE"
+    _ro
+}
+
+
 # $1 directory
 # $2 repository
 function ChangeAndCheckoutRepo() {
@@ -308,13 +387,11 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-
 if [[ ${UPDATE_SELF} -ne 0 ]]; then
         UpdateSelf
 else
         rm -f "${SELFUPDATE_SCRIPT}"
 fi
-
 
 
 ## Parse command line
@@ -323,6 +400,7 @@ while [[ $# -gt 0 ]]; do
 
     case $key in
 	"-ia" | "--install-all")
+	    SanityCheck
 	    InstallDashboard
 	    InstallBinaries
 	    InstallSBinaries
@@ -340,6 +418,7 @@ while [[ $# -gt 0 ]]; do
 	    ;;
 
 	"-id" | "--install-dashboard")
+	    SanityCheck
 	    InstallDashboard
 	    DisplayConfigUpdate
 	    shift
@@ -353,22 +432,26 @@ while [[ $# -gt 0 ]]; do
 	    ;;
 
 	"-ib" | "--install-binaries")
+	    SanityCheck
 	    InstallBinaries
 	    shift
 	    ;;
 
 	"-rb" | "--restore-binaries")
 	    RestoreBinaries
+	    RestoreSanityCheck
 	    shift
 	    ;;
 
 	"-is" | "--install-sbinaries")
+	    SanityCheck
 	    InstallSBinaries
 	    shift
 	    ;;
 
 	"-rs" | "--restore-sbinaries")
 	    RestoreSBinaries
+	    RestoreSanityCheck
 	    shift
 	    ;;
 
