@@ -414,6 +414,7 @@ while [[ $# -gt 0 ]]; do
 	    RestoreSBinaries
 	    RestoreDataAndDowngrade
 	    DisplayConfigUpdate
+	    RestoreSanityCheck
 	    shift
 	    ;;
 
@@ -428,6 +429,7 @@ while [[ $# -gt 0 ]]; do
 	    RestoreDashboard
 	    RestoreDataAndDowngrade
 	    DisplayConfigUpdate
+	    RestoreSanityCheck
 	    shift
 	    ;;
 
@@ -440,6 +442,7 @@ while [[ $# -gt 0 ]]; do
 	"-rb" | "--restore-binaries")
 	    RestoreBinaries
 	    RestoreSanityCheck
+	    RestoreSanityCheck
 	    shift
 	    ;;
 
@@ -451,6 +454,7 @@ while [[ $# -gt 0 ]]; do
 
 	"-rs" | "--restore-sbinaries")
 	    RestoreSBinaries
+	    RestoreSanityCheck
 	    RestoreSanityCheck
 	    shift
 	    ;;
