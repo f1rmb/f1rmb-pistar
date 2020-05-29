@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# ############################## NOTE ################################### #
+#                                                                         #
+# Setting envvar NO_UPDATE_SELF=1 will disable auto update of this script #
+#                                                                         #
+# ####################################################################### #
+
 if [ "$(id -u)" != "0" ]; then
   echo -e "You need to be root to run this command...\n"
   exit 1
@@ -394,10 +400,12 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-if [[ ${UPDATE_SELF} -ne 0 ]]; then
+if [ -z "$NO_SELF_UPDATE" -a x"$NO_UPDATE_SELF" != "x1" ]; then
+    if [[ ${UPDATE_SELF} -ne 0 ]]; then
         UpdateSelf
-else
+    else
         rm -f "${SELFUPDATE_SCRIPT}"
+    fi
 fi
 
 
