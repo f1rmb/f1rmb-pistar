@@ -139,13 +139,13 @@ function ApplyFix_PI4fstab() {
 
 function SanityCheck() {
     _rw
-    ApplyFix_PI4fstab "APPLY"
+    #ApplyFix_PI4fstab "APPLY"
     _ro
 }
 
 function RestoreSanityCheck() {
     _rw
-    ApplyFix_PI4fstab "REMOVE"
+    #ApplyFix_PI4fstab "REMOVE"
     _ro
 }
 
