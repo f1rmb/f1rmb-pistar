@@ -150,6 +150,10 @@ function RestoreSanityCheck() {
 }
 
 
+function WaitForUnattendedUpgrade() {
+    /usr/bin/systemd-run --property="After=apt-daily.service apt-daily-upgrade.service" --wait /bin/true > /dev/null 2<&1
+}
+
 # $1 directory
 # $2 repository
 function ChangeAndCheckoutRepo() {
@@ -165,6 +169,7 @@ function ChangeAndCheckoutRepo() {
 }
 
 function InstallDashboard() {
+    WaitForUnattendedUpgrade
     _rw
     ChangeAndCheckoutRepo "/var/www/dashboard" "$PERSONNAL_DASHBOARD_REPO"
     _ro
@@ -177,6 +182,7 @@ function RestoreDashboard() {
 }
 
 function InstallBinaries() {
+    WaitForUnattendedUpgrade
     _rw
     ChangeAndCheckoutRepo "/usr/local/bin" "$PERSONNAL_BINARIES_REPO"
     _ro
@@ -189,6 +195,7 @@ function RestoreBinaries() {
 }
 
 function InstallSBinaries() {
+    WaitForUnattendedUpgrade
     _rw
     ChangeAndCheckoutRepo "/usr/local/sbin" "$PERSONNAL_SBINARIES_REPO"
     _ro
