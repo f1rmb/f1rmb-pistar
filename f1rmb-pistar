@@ -415,6 +415,7 @@ while [[ $# -gt 0 ]]; do
 
     case $key in
 	"-ia" | "--install-all")
+	    echo "INFO: Installing everything, this may take some time..."
 	    SanityCheck
 	    InstallDashboard
 	    InstallBinaries
@@ -434,6 +435,7 @@ while [[ $# -gt 0 ]]; do
 	    ;;
 
 	"-id" | "--install-dashboard")
+	    echo "INFO: Installing the dashboard, this may take some time..."
 	    SanityCheck
 	    InstallDashboard
 	    DisplayConfigUpdate
@@ -449,6 +451,7 @@ while [[ $# -gt 0 ]]; do
 	    ;;
 
 	"-ib" | "--install-binaries")
+	    echo "INFO: Installing the binaries, this may take some time..."
 	    SanityCheck
 	    InstallBinaries
 	    shift
@@ -461,6 +464,7 @@ while [[ $# -gt 0 ]]; do
 	    ;;
 
 	"-is" | "--install-sbinaries")
+	    echo "INFO: Installing the system binaries, this may take some time..."
 	    SanityCheck
 	    InstallSBinaries
 	    shift
