@@ -253,6 +253,9 @@ function RestoreDataAndDowngrade() {
 	systemctl disable mobilegps.timer
 	rm -f /lib/systemd/system/mobilegps.timer
 	rm -f /lib/systemd/system/mobilegps.service	
+
+	# Restore fstab phpsession
+	sed -i "/\/var\/lib\/php5\/sessions/c\\tmpfs\t\t\t\/var\/lib\/php5\/sessions\ttmpfs\tnodev,noatime,nosuid,mode=0777,size=64k\t\t0\t0" /etc/fstab
 	
 	systemctl daemon-reload
 	
@@ -317,7 +320,10 @@ function RestoreDataAndDowngrade() {
 	# Enable the service
 	systemctl daemon-reload
 	systemctl enable mobilegps.service
-	
+
+	# Restore fstab phpsession
+	sed -i "/\/var\/lib\/php\/sessions/c\\tmpfs\t\t\t\/var\/lib\/php\/sessions\ttmpfs\tnodev,noatime,nosuid,mode=0777,size=64k\t\t0\t0" /etc/fstab
+
 	sed -i "s/$PISTAR_VERSION/$OFFICIAL_RELEASE_VERSION/g" /etc/pistar-release
 
 	/usr/local/sbin/pistar-motdgen
