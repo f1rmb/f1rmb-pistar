@@ -144,6 +144,10 @@ function ApplyFix_PI4fstab() {
 
 function SanityCheck() {
     _rw
+    if [ ${PISTAR_VERSION_INFO[0]} -eq 3 ]; then
+	echo "Your Pi-Star version 3 has reached its end of support, then it won't be upgraded."
+	exit 1
+    fi
     ApplyFix_PI4fstab "APPLY"
     _ro
 }
